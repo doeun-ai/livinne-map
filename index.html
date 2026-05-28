@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리빈느 출시 로드맵</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #A8844A;
+  --gold-mid: #C4A265;
+  --launch-red: #B83228;
+  --bg: #F5F2ED;
+  --text-main: #1A1714;
+  --text-mid: #3A3530;
+  --text-muted: #8A8278;
+}
+html, body { min-height: 100%; background: var(--bg); font-family: 'Noto Sans KR', sans-serif; }
+body { display: flex; flex-direction: column; align-items: center; padding: 48px 24px 72px; }
+
+.header { text-align: center; margin-bottom: 52px; }
+.header-title { font-size: 18px; font-weight: 700; letter-spacing: 0.15em; color: var(--text-main); margin-bottom: 18px; }
+.header-logo { height: 52px; object-fit: contain; display: block; margin: 0 auto; }
+.logo-placeholder {
+  display: inline-block; padding: 8px 20px;
+  border: 1.5px dashed #C0B8AC; border-radius: 4px;
+  font-size: 11px; letter-spacing: 0.15em; color: var(--text-muted); line-height: 1;
+}
+.tl-canvas { width: 100%; max-width: 1100px; }
+
+/* Popup */
+.overlay {
+  position: fixed; inset: 0; background: rgba(26,23,20,0.45);
+  backdrop-filter: blur(5px); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.popup {
+  background: #FDFAF6; border: 1px solid #DDD5C8; border-radius: 6px;
+  width: min(500px, 92vw); max-height: 82vh; overflow-y: auto;
+  padding: 30px 30px 24px; position: relative;
+  transform: translateY(10px); transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.overlay.open .popup { transform: none; }
+.popup-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
+.popup-close:hover { color: var(--text-main); }
+.popup-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
+.popup-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--text-main); line-height: 1.2; margin-bottom: 3px; }
+.popup-date { font-size: 11px; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 18px; }
+.popup-divider { border: none; border-top: 1px solid #E0D8CE; margin: 0 0 18px; }
+.popup-img-area {
+  width: 100%; min-height: 100px; border: 1.5px dashed #D0C8BA; border-radius: 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  margin-bottom: 16px; color: var(--text-muted); font-size: 11px; letter-spacing: 0.1em;
+  cursor: pointer; position: relative; overflow: hidden; transition: border-color 0.2s;
+}
+.popup-img-area:hover { border-color: var(--gold-mid); }
+.popup-img-area img { width: 100%; height: auto; display: block; border-radius: 3px; }
+.popup-img-area .lbl { position: relative; z-index: 1; }
+.popup-img-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 20px; }
+.popup-notes-label { font-size: 9px; font-weight: 700; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; margin-bottom: 7px; }
+.popup-notes {
+  width: 100%; background: #F0EBE2; border: 1px solid #DDD5C4; border-radius: 4px;
+  color: var(--text-main); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px; line-height: 1.7; padding: 11px 13px; resize: vertical; min-height: 90px; outline: none;
+  transition: border-color 0.2s;
+}
+.popup-notes:focus { border-color: var(--gold-mid); }
+.popup-notes::placeholder { color: var(--text-muted); }
+.popup-save {
+  margin-top: 12px; width: 100%; background: none; border: 1.5px solid var(--gold-mid);
+  color: var(--gold); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  padding: 9px; border-radius: 3px; cursor: pointer; transition: background 0.2s;
+}
+.popup-save:hover { background: rgba(168,132,74,0.07); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">리빈느 출시 로드맵</div>
+  <img class="header-logo" src="logo.png" alt="LIVINNE"
+    onerror="this.style.display='none';document.getElementById('lp').style.display='inline-block'">
+  <span class="logo-placeholder" id="lp" style="display:none">logo.png</span>
+</div>
+
+<div class="tl-canvas" id="canvas"></div>
+
+<div class="overlay" id="overlay" onclick="maybeClose(event)">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-tag" id="p-tag"></div>
+    <div class="popup-title" id="p-title"></div>
+    <div class="popup-date" id="p-date"></div>
+    <hr class="popup-divider">
+    <div class="popup-img-area" id="p-imgarea">
+      <img id="p-img" src="" style="display:none">
+    </div>
+    <div class="popup-notes-label">메모 · 상세 내용</div>
+    <textarea class="popup-notes" id="p-notes" placeholder="상세 내용을 입력하세요..."></textarea>
+    <button class="popup-save" onclick="saveNote()">저장</button>
+  </div>
+</div>
+
+<script>
+// 3월(t=0) ~ 9월(t=1), 7개월 = 6 intervals
+// t = (month_offset) / 6
+// ── 월 눈금용 비선형 좌표계 ──
+// 3~5월(과거) 구간을 전체의 30%로 압축, 6~9월(미래)을 70%로 확장
+// 월 index 0=3월 … 6=9월
+const MONTH_BREAKS = [0, 0.07, 0.15, 0.30, 0.50, 0.70, 0.86, 1.00];
+// MONTH_BREAKS[i] = i번째 월의 t값 (3월=0, 4월=0.07, 5월=0.15, 6월=0.30, 7월=0.50, 8월=0.70, 9월=1.00)
+// 중간 값 보간 함수: month(3~9) + fraction(0~1) → t(0~1)
+function monthToT(month, frac=0) {
+  const i = month - 3;
+  const t0 = MONTH_BREAKS[i], t1 = MONTH_BREAKS[i+1];
+  return t0 + (t1 - t0) * frac;
+}
+
+const MONTHS = ['3월','4월','5월','6월','7월','8월','9월'];
+
+// state: done(완료) | active(현재) | upcoming(예정) | launch(출시)
+// r: 노드 반지름 직접 지정
+// row: stem 길이 단계 (0=짧음 STEM, 1=STEM+ROW_H, 2=STEM+ROW_H*2)
+const STEM_BASE = 18;
+const ROW_H     = 36;
+
+const MS = [
+  { month:3, frac:0.0,  label:'디퓨저\n샘플 수급',      state:'done',     r:6,  tag:'샘플링', fullDate:'2026년 3월',     fullLabel:'디퓨저 샘플 수급',            note:'디퓨저 100ml / 200ml, 룸스프레이 50ml 샘플 수령 및 검토', row:0 },
+  { month:4, frac:0.85, label:'브랜드 네이밍\nBX 확정', state:'done',     r:6,  tag:'브랜드', fullDate:'2026년 4월 말',  fullLabel:'브랜드 네이밍 · 컨셉 · BX 확정', note:'브랜드명 LIVINNE 확정, 컨셉 및 BI/BX 방향성 결정',         row:0 },
+  { month:5, frac:0.4,  label:'향 사내투표',             state:'active',   r:10, tag:'향 선정',fullDate:'2026년 5월 중순',fullLabel:'향 사내 투표',                note:'최종 후보 향 3종 사내 투표 진행 및 결과 취합',              row:1, img:'vote.jpg' },
+  { month:5, frac:0.85, label:'디자인 결정',             state:'active',   r:10, tag:'디자인', fullDate:'2026년 5월 말',  fullLabel:'디자인 최종 결정',             note:'공병, 스티커, 패키지 박스, 구성품 디자인 최종 확정',        row:2, img:'design.jpg' },
+  { month:6, frac:0.1,  label:'발주',                    state:'active',   r:10, tag:'발주',   fullDate:'2026년 6월 초',  fullLabel:'제품 사입 발주',               note:'최종 견적 확정 후 계약 및 발주 진행',                       row:0 },
+  { month:7, frac:0.1,  label:'환경부\n인증 완료',        state:'upcoming', r:7,  tag:'인증',   fullDate:'2026년 7월 초',  fullLabel:'환경부 안전확인 인증 완료',     note:'안전확인대상 생활화학제품 신고 완료 예정',                  row:1, img:'vote.jpg' },
+  { month:8, frac:0.1,  label:'샘플 수급\n촬영',          state:'upcoming', r:7,  tag:'촬영',   fullDate:'2026년 8월 초',  fullLabel:'샘플 수급 · 제품 촬영',        note:'최종 생산 샘플 입고 후 상품 촬영 진행 (커머스 및 SNS용)',   row:0 },
+  { month:8, frac:0.85, label:'입고 목표일',              state:'upcoming', r:7,  tag:'물류',   fullDate:'2026년 8월 말',  fullLabel:'제품 입고 목표일',              note:'전 품목 생산 완료 후 창고 입고 예정',                       row:1, img:'vote.jpg' },
+  { month:9, frac:0.0,  label:'출시 타겟일',              state:'launch',   r:10, tag:'출시',   fullDate:'2026년 9월 초',  fullLabel:'리빈느 공식 출시',              note:'온라인 스토어 오픈 및 SNS 출시 캠페인 시작',                row:0 },
+];
+
+// t값 계산
+MS.forEach(ms => { ms.t = monthToT(ms.month, ms.frac); });
+
+const notes = {}, imgs = {};
+let curIdx = null;
+
+const PAD    = 50;
+const LINE_Y = 80;
+const SVG_H  = LINE_Y + STEM_BASE + ROW_H * 3 + 70;
+
+function svgEl(tag, attrs={}) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+function build() {
+  const canvas = document.getElementById('canvas');
+  const W = canvas.getBoundingClientRect().width || 1060;
+  const x1 = PAD, x2 = W - PAD, lw = x2 - x1;
+
+  const svg = svgEl('svg', { width:'100%', height:SVG_H, viewBox:`0 0 ${W} ${SVG_H}` });
+  svg.style.display = 'block'; svg.style.overflow = 'visible';
+
+  // ── 선 구간 ──
+  // 배경 (전체 회색)
+  svg.appendChild(svgEl('line', { x1, y1:LINE_Y, x2, y2:LINE_Y, stroke:'#DDD8D0', 'stroke-width':'2', 'stroke-linecap':'round' }));
+
+  // done 구간: 시작~첫 active 직전까지 어두운 색
+  const firstActiveT = MS.find(m => m.state !== 'done')?.t ?? 1;
+  svg.appendChild(svgEl('line', { x1, y1:LINE_Y, x2: x1 + firstActiveT * lw, y2:LINE_Y, stroke:'#8A8278', 'stroke-width':'2.5', 'stroke-linecap':'round' }));
+
+  // active+이후 구간: 금색
+  const firstActiveX = x1 + firstActiveT * lw;
+  svg.appendChild(svgEl('line', { x1:firstActiveX, y1:LINE_Y, x2, y2:LINE_Y, stroke:'#C4A265', 'stroke-width':'2.5', 'stroke-linecap':'round' }));
+
+  // ── 월 눈금 ──
+  MONTHS.forEach((month, i) => {
+    const mx = x1 + MONTH_BREAKS[i] * lw;
+    svg.appendChild(svgEl('line', { x1:mx, y1:LINE_Y-7, x2:mx, y2:LINE_Y+7, stroke:'#C0B8AC', 'stroke-width':'1.5' }));
+    const lbl = svgEl('text', {
+      x:mx, y:LINE_Y - 16,
+      'font-family':'Noto Sans KR,sans-serif', 'font-size':'13', 'font-weight':'700',
+      fill:'#3A3530', 'text-anchor':'middle', 'letter-spacing':'0.05em'
+    });
+    lbl.textContent = month;
+    svg.appendChild(lbl);
+  });
+
+  // ── 노드 + stem + 라벨 ──
+  MS.forEach((ms, i) => {
+    const x   = x1 + ms.t * lw;
+    const r   = ms.r;
+    // stem 길이 = STEM_BASE + row * ROW_H (라벨이 아래에 배치될수록 stem도 길어짐)
+    const stemLen = STEM_BASE + ms.row * ROW_H;
+
+    // 색상
+    let fill;
+    if (ms.state === 'done')     fill = '#9A9288';
+    if (ms.state === 'active')   fill = '#A8844A';
+    if (ms.state === 'upcoming') fill = '#C4A265';
+    if (ms.state === 'launch')   fill = '#B83228';
+
+    const stemColor = ms.state === 'done' ? '#9A9288'
+                    : ms.state === 'launch' ? '#B83228'
+                    : '#C4A265';
+
+    // stem
+    svg.appendChild(svgEl('line', {
+      x1:x, y1:LINE_Y + r, x2:x, y2:LINE_Y + r + stemLen,
+      stroke:stemColor, 'stroke-width':'1.5', 'stroke-linecap':'round'
+    }));
+
+    // 라벨 Y = line + r + stemLen + 작은 패딩
+    const labelY   = LINE_Y + r + stemLen + 14;
+    const labelFill = ms.state === 'done'    ? '#9A9288'
+                    : ms.state === 'active'  ? '#6B5228'
+                    : ms.state === 'launch'  ? '#B83228'
+                    : '#4A4540';
+    const labelW    = ms.state === 'active' || ms.state === 'launch' ? '700' : '500';
+    const labelSize = ms.state === 'launch' ? '12.5' : ms.r <= 7 ? '10' : '11.5';
+
+    const lines = ms.label.split('\n');
+    lines.forEach((line, li) => {
+      const t = svgEl('text', {
+        x, y: labelY + li * 16,
+        'font-family':'Noto Sans KR,sans-serif', 'font-size':labelSize,
+        'font-weight':labelW, fill:labelFill,
+        'text-anchor':'middle', 'letter-spacing':'0.04em'
+      });
+      t.textContent = line;
+      svg.appendChild(t);
+    });
+
+    // NOW 뱃지 (active)
+    if (ms.state === 'active') {
+      const by = labelY + lines.length * 16 + 8;
+      svg.appendChild(svgEl('rect', { x:x-16, y:by-2, width:32, height:14, rx:2, fill:'none', stroke:'#C4A265', 'stroke-width':'1.2' }));
+      const bt = svgEl('text', { x, y:by+9, 'font-family':'Noto Sans KR,sans-serif', 'font-size':'8', 'font-weight':'700', fill:'#A8844A', 'text-anchor':'middle', 'letter-spacing':'0.2em' });
+      bt.textContent = 'NOW';
+      svg.appendChild(bt);
+    }
+
+    // 노드 원
+    const g = svgEl('g', { cursor:'pointer' });
+    g.addEventListener('click', () => openPopup(i));
+    g.appendChild(svgEl('circle', { cx:x, cy:LINE_Y, r, fill }));
+    svg.appendChild(g);
+  });
+
+  canvas.innerHTML = '';
+  canvas.appendChild(svg);
+}
+
+function openPopup(idx) {
+  curIdx = idx;
+  const ms = MS[idx];
+  document.getElementById('p-tag').textContent = ms.tag;
+  document.getElementById('p-title').textContent = ms.fullLabel;
+  document.getElementById('p-date').textContent = ms.fullDate;
+  document.getElementById('p-notes').value = notes[idx] !== undefined ? notes[idx] : ms.note;
+  const area = document.querySelector('.popup-img-area');
+  const img  = document.getElementById('p-img');
+  if (ms.img) {
+    img.src = ms.img;
+    img.style.display = 'block';
+    area.style.display = 'block';
+    area.classList.add('has-img');
+  } else {
+    area.style.display = 'none';
+    img.style.display  = 'none';
+  }
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function maybeClose(e) { if (e.target===document.getElementById('overlay')) closePopup(); }
+function closePopup() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; curIdx=null; }
+function saveNote() {
+  if (curIdx===null) return;
+  notes[curIdx] = document.getElementById('p-notes').value;
+  const btn = document.querySelector('.popup-save');
+  btn.textContent='저장 완료 ✓';
+  setTimeout(()=>{ btn.textContent='저장'; }, 1600);
+}
+function handleImg(e) {
+  const file=e.target.files[0]; if(!file||curIdx===null) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    imgs[curIdx]=ev.target.result;
+    const area=document.querySelector('.popup-img-area');
+    const img=document.getElementById('p-img');
+    img.src=ev.target.result;
+    img.style.display='block';
+    area.classList.add('has-img');
+    // 플레이스홀더 숨김
+    area.querySelectorAll('.lbl').forEach(el=>el.style.display='none');
+  };
+  r.readAsDataURL(file);
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePopup(); });
+window.addEventListener('load', build);
+window.addEventListener('resize', ()=>{ clearTimeout(window._rt); window._rt=setTimeout(build,150); });
+</script>
+</body>
+</html>
